@@ -1,0 +1,554 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Finca Cafetera</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f5f2;
+            margin: 0;
+            padding: 20px;
+            color: #26352b;
+        }
+
+        .contenedor {
+            max-width: 700px;
+            margin: auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #315b35;
+            margin-bottom: 8px;
+        }
+
+        .subtitulo {
+            text-align: center;
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .tarjeta {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #315b35;
+        }
+
+        .resumen {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .resumen p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .resumen strong {
+            display: block;
+            font-size: 18px;
+            margin-top: 8px;
+        }
+
+        .venta {
+            border-top: 4px solid #3b8d4a;
+        }
+
+        .gasto {
+            border-top: 4px solid #c67b35;
+        }
+
+        .ganancia {
+            border-top: 4px solid #4169a1;
+        }
+
+        label {
+            display: block;
+            margin-top: 12px;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 8px;
+        }
+
+        input, select {
+            border: 1px solid #ccc;
+            background: white;
+        }
+
+        button {
+            background: #315b35;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 18px;
+        }
+
+        button:hover {
+            background: #244629;
+        }
+
+        .boton-secundario {
+            background: #777;
+            margin-top: 10px;
+        }
+
+        .boton-secundario:hover {
+            background: #555;
+        }
+
+        .movimiento {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            background: #fafafa;
+        }
+
+        .movimiento strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .movimiento small {
+            color: #666;
+        }
+
+        .movimiento.venta-movimiento {
+            border-left: 5px solid #3b8d4a;
+        }
+
+        .movimiento.gasto-movimiento {
+            border-left: 5px solid #c67b35;
+        }
+
+        .boton-eliminar {
+            background: #b33a3a;
+            margin-top: 10px;
+            padding: 8px;
+            font-size: 14px;
+        }
+
+        .sin-movimientos {
+            color: #777;
+            text-align: center;
+        }
+
+        @media (max-width: 500px) {
+            body {
+                padding: 10px;
+            }
+
+            .resumen {
+                grid-template-columns: 1fr;
+            }
+
+            .resumen strong {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="contenedor">
+
+        <h1>☕ Mi Finca Cafetera</h1>
+
+        <p class="subtitulo">
+            Control de ventas, gastos y ganancias
+        </p>
+
+        <!-- RESUMEN -->
+        <div class="tarjeta">
+            <h2>Resumen</h2>
+
+            <div class="resumen">
+
+                <div class="venta">
+                    <p>Total ventas</p>
+                    <strong id="ventas">$0</strong>
+                </div>
+
+                <div class="gasto">
+                    <p>Total gastos</p>
+                    <strong id="gastos">$0</strong>
+                </div>
+
+                <div class="ganancia">
+                    <p>Ganancia neta</p>
+                    <strong id="ganancia">$0</strong>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- FORMULARIO -->
+        <div class="tarjeta">
+
+            <h2>Registrar movimiento</h2>
+
+            <label for="tipo">Tipo de movimiento</label>
+
+            <select id="tipo">
+                <option value="venta">Venta</option>
+                <option value="gasto">Gasto</option>
+            </select>
+
+            <label for="fecha">Fecha</label>
+
+            <input type="date" id="fecha" required>
+
+            <label for="descripcion">Descripción</label>
+
+            <input
+                type="text"
+                id="descripcion"
+                placeholder="Ej: Venta de café, fertilizante..."
+            >
+
+            <label for="monto">Valor en pesos</label>
+
+            <input
+                type="number"
+                id="monto"
+                placeholder="Ej: 250000"
+                min="1"
+                step="1"
+                required
+            >
+
+            <button onclick="registrar()">
+                Registrar movimiento
+            </button>
+
+        </div>
+
+        <!-- HISTORIAL -->
+        <div class="tarjeta">
+
+            <h2>Historial de movimientos</h2>
+
+            <div id="historial">
+                <p class="sin-movimientos">
+                    No hay movimientos registrados.
+                </p>
+            </div>
+
+            <button
+                class="boton-secundario"
+                onclick="borrarTodos()"
+            >
+                Borrar todos los movimientos
+            </button>
+
+        </div>
+
+    </div>
+
+    <script>
+
+        // Cargar movimientos guardados
+        let movimientos = JSON.parse(
+            localStorage.getItem("movimientosFinca")
+        ) || [];
+
+        // Formatear pesos colombianos
+        function formatoPesos(valor) {
+            return "$" + valor.toLocaleString("es-CO");
+        }
+
+        // Poner la fecha de hoy automáticamente
+        function fechaHoy() {
+
+            const hoy = new Date();
+
+            const año = hoy.getFullYear();
+
+            const mes = String(
+                hoy.getMonth() + 1
+            ).padStart(2, "0");
+
+            const dia = String(
+                hoy.getDate()
+            ).padStart(2, "0");
+
+            return `${año}-${mes}-${dia}`;
+        }
+
+        // Mostrar los totales
+        function actualizarResumen() {
+
+            let totalVentas = 0;
+            let totalGastos = 0;
+
+            movimientos.forEach(function(movimiento) {
+
+                if (movimiento.tipo === "venta") {
+                    totalVentas += movimiento.monto;
+                } else {
+                    totalGastos += movimiento.monto;
+                }
+
+            });
+
+            const gananciaNeta = totalVentas - totalGastos;
+
+            document.getElementById("ventas").textContent =
+                formatoPesos(totalVentas);
+
+            document.getElementById("gastos").textContent =
+                formatoPesos(totalGastos);
+
+            document.getElementById("ganancia").textContent =
+                formatoPesos(gananciaNeta);
+
+        }
+
+        // Guardar movimientos en el celular
+        function guardarMovimientos() {
+
+            localStorage.setItem(
+                "movimientosFinca",
+                JSON.stringify(movimientos)
+            );
+
+        }
+
+        // Registrar una venta o gasto
+        function registrar() {
+
+            let tipo = document.getElementById("tipo").value;
+
+            let fecha = document.getElementById("fecha").value;
+
+            let descripcion =
+                document.getElementById("descripcion").value.trim();
+
+            let monto = Number(
+                document.getElementById("monto").value
+            );
+
+            // Validar fecha
+            if (!fecha) {
+
+                alert("Selecciona una fecha");
+
+                return;
+
+            }
+
+            // Validar monto
+            if (monto <= 0 || !Number.isFinite(monto)) {
+
+                alert("Ingresa un valor válido");
+
+                return;
+
+            }
+
+            // Crear movimiento
+            const movimiento = {
+
+                id: Date.now(),
+
+                tipo: tipo,
+
+                fecha: fecha,
+
+                descripcion: descripcion || "Sin descripción",
+
+                monto: monto
+
+            };
+
+            // Agregar al historial
+            movimientos.push(movimiento);
+
+            // Guardar en el celular
+            guardarMovimientos();
+
+            // Actualizar pantalla
+            actualizarResumen();
+
+            mostrarHistorial();
+
+            // Limpiar campos
+            document.getElementById("monto").value = "";
+
+            document.getElementById("descripcion").value = "";
+
+            alert("Movimiento registrado correctamente");
+
+        }
+
+        // Mostrar historial
+        function mostrarHistorial() {
+
+            const historial =
+                document.getElementById("historial");
+
+            historial.innerHTML = "";
+
+            if (movimientos.length === 0) {
+
+                historial.innerHTML =
+                    '<p class="sin-movimientos">No hay movimientos registrados.</p>';
+
+                return;
+
+            }
+
+            // Mostrar primero los movimientos más recientes
+            const ordenados = [...movimientos].sort(function(a, b) {
+
+                return b.fecha.localeCompare(a.fecha) || b.id - a.id;
+
+            });
+
+            ordenados.forEach(function(movimiento) {
+
+                const div = document.createElement("div");
+
+                div.className =
+                    "movimiento " +
+                    (movimiento.tipo === "venta"
+                        ? "venta-movimiento"
+                        : "gasto-movimiento");
+
+                const titulo =
+                    movimiento.tipo === "venta"
+                        ? "Venta"
+                        : "Gasto";
+
+                div.innerHTML = `
+
+                    <strong>${titulo}: ${formatoPesos(movimiento.monto)}</strong>
+
+                    <small>Fecha: ${movimiento.fecha}</small><br>
+
+                    <small>Descripción: ${escapeHTML(movimiento.descripcion)}</small>
+
+                    <button
+                        class="boton-eliminar"
+                        onclick="eliminarMovimiento(${movimiento.id})"
+                    >
+                        Eliminar
+                    </button>
+
+                `;
+
+                historial.appendChild(div);
+
+            });
+
+        }
+
+        // Evitar interpretar HTML en las descripciones
+        function escapeHTML(texto) {
+
+            return texto.replace(/[&<>"']/g, function(caracter) {
+
+                const entidades = {
+
+                    "&": "&amp;",
+                    "<": "&lt;",
+                    ">": "&gt;",
+                    '"': "&quot;",
+                    "'": "&#039;"
+
+                };
+
+                return entidades[caracter];
+
+            });
+
+        }
+
+        // Eliminar un movimiento
+        function eliminarMovimiento(id) {
+
+            const confirmar = confirm(
+                "¿Quieres eliminar este movimiento?"
+            );
+
+            if (!confirmar) {
+                return;
+            }
+
+            movimientos = movimientos.filter(function(movimiento) {
+
+                return movimiento.id !== id;
+
+            });
+
+            guardarMovimientos();
+
+            actualizarResumen();
+
+            mostrarHistorial();
+
+        }
+
+        // Borrar todo el historial
+        function borrarTodos() {
+
+            if (movimientos.length === 0) {
+
+                alert("No hay movimientos para borrar");
+
+                return;
+
+            }
+
+            const confirmar = confirm(
+                "¿Seguro que quieres borrar todos los movimientos?"
+            );
+
+            if (!confirmar) {
+                return;
+            }
+
+            movimientos = [];
+
+            guardarMovimientos();
+
+            actualizarResumen();
+
+            mostrarHistorial();
+
+        }
+
+        // Iniciar la aplicación
+        document.getElementById("fecha").value = fechaHoy();
+
+        actualizarResumen();
+
+        mostrarHistorial();
+
+    </script>
+
+</body>
+</html>
